@@ -2,6 +2,7 @@ from storygraph_api.request.user_request import UserScraper
 from storygraph_api.exception_handler import parsing_exception
 from bs4 import BeautifulSoup
 import re
+from datetime import datetime
 
 class UserParser:
     @staticmethod
@@ -31,8 +32,11 @@ class UserParser:
                 book_language = book.find('span', string=re.compile(r'language', re.IGNORECASE)).parent.text.split(":")[1][1::]
                 book_details["book_language"] = book_language
             if(get_pub_date):
-                book_pub_date = book.find('span', string=re.compile(r'edition pub date', re.IGNORECASE)).parent.text.split(":")[1][1::]
-                book_details["book_pub_date"] = book_pub_date
+                try:
+                    book_pub_date = book.find('span', string=re.compile(r'edition pub date', re.IGNORECASE)).parent.text.split(":")[1][1::]
+                    book_details["book_pub_date"] = datetime.strptime(book_pub_date, "%d %b %Y").isoformat().split("T")[0]
+                except:
+                    book_details["book_pub_date"] = None
 
             books_list.append(book_details)
         data = list({
